@@ -13,14 +13,7 @@ class RevenueChart extends StatelessWidget {
           borderRadius: BorderRadius.all(
             Radius.circular(18),
           ),
-          gradient: LinearGradient(
-            colors: [
-              Color(0xff2c274c),
-              Color(0xff46426c),
-            ],
-            begin: Alignment.bottomCenter,
-            end: Alignment.topCenter,
-          ),
+          color: Colors.white,
         ),
         child: Padding(
           padding: const EdgeInsets.only(
@@ -45,14 +38,14 @@ class RevenueChart extends StatelessWidget {
         horizontalInterval: 1,
         verticalInterval: 1,
         getDrawingHorizontalLine: (value) {
-          return const FlLine(
-            color: Color(0xff37434d),
+          return FlLine(
+            color: Colors.grey.shade100,
             strokeWidth: 1,
           );
         },
         getDrawingVerticalLine: (value) {
-          return const FlLine(
-            color: Color(0xff37434d),
+          return FlLine(
+            color: Colors.grey.shade100,
             strokeWidth: 1,
           );
         },
@@ -104,8 +97,8 @@ class RevenueChart extends StatelessWidget {
           isCurved: true,
           gradient: const LinearGradient(
             colors: [
-              Color(0xff23b6e6),
-              Color(0xff02d39a),
+              Color(0xFF1FA2A6), // Deep Teal
+              Color(0xFFD4AF37), // Gold
             ],
           ),
           barWidth: 5,
@@ -117,8 +110,8 @@ class RevenueChart extends StatelessWidget {
             show: true,
             gradient: LinearGradient(
               colors: [
-                const Color(0xff23b6e6).withOpacity(0.3),
-                const Color(0xff02d39a).withOpacity(0.3),
+                const Color(0xFF1FA2A6).withOpacity(0.1),
+                const Color(0xFFD4AF37).withOpacity(0.1),
               ],
             ),
           ),
@@ -128,24 +121,24 @@ class RevenueChart extends StatelessWidget {
   }
 
   Widget bottomTitleWidgets(double value, TitleMeta meta) {
-    const style = TextStyle(
-      fontWeight: FontWeight.bold,
-      fontSize: 12, // Reduced size slightly
-      color: Colors.white70,
+    final style = TextStyle(
+      fontWeight: FontWeight.w600,
+      fontSize: 12,
+      color: Colors.grey[400],
     );
     Widget text;
     switch (value.toInt()) {
       case 2:
-        text = const Text('MAR', style: style);
+        text = Text('MAR', style: style);
         break;
       case 5:
-        text = const Text('JUN', style: style);
+        text = Text('JUN', style: style);
         break;
       case 8:
-        text = const Text('SEP', style: style);
+        text = Text('SEP', style: style);
         break;
       default:
-        text = const Text('', style: style);
+        text = Text('', style: style);
         break;
     }
 
@@ -153,10 +146,10 @@ class RevenueChart extends StatelessWidget {
   }
 
   Widget leftTitleWidgets(double value, TitleMeta meta) {
-    const style = TextStyle(
-      fontWeight: FontWeight.bold,
+    final style = TextStyle(
+      fontWeight: FontWeight.w600,
       fontSize: 12,
-      color: Colors.white70,
+      color: Colors.grey[400],
     );
     String text;
     switch (value.toInt()) {

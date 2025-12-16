@@ -17,29 +17,36 @@ class ProductListScreen extends StatelessWidget {
         padding: const EdgeInsets.all(8),
         itemBuilder: (context, index) {
           return Card(
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Colors.purple.shade100,
-                child: Text('${index + 1}'),
-              ),
-              title: Text('Product Item ${index + 1}'),
-              subtitle: Text('Price: ₹${(index + 1) * 100}'),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.blue),
-                    onPressed: () {
-                      // TODO: Edit Product
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () {
-                      // TODO: Delete Product
-                    },
-                  ),
-                ],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+              child: ListTile(
+                title: Text(
+                  'Product Item ${index + 1}',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                subtitle: Row(
+                  children: [
+                    Text('MRP: ₹${(index + 1) * 120}', style: TextStyle(color: Colors.grey[500], decoration: TextDecoration.lineThrough)),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Rate: ₹${(index + 1) * 100}',
+                      style: const TextStyle(color: Color(0xFF1FA2A6), fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit_outlined, size: 20, color: Color(0xFF6B7280)),
+                      onPressed: () {},
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, size: 20, color: Color(0xFFDC2626)),
+                      onPressed: () {},
+                    ),
+                  ],
+                ),
               ),
             ),
           );

@@ -18,31 +18,33 @@ class OrderListScreen extends StatelessWidget {
         itemBuilder: (context, index) {
           final isCompleted = index % 3 != 0;
           return Card(
-            child: ListTile(
-              leading: Icon(
-                Icons.shopping_bag,
-                color: isCompleted ? Colors.green : Colors.orange,
-              ),
-              title: Text('Order #${1000 + index}'),
-              subtitle: Text('Party Name ${index + 1}\n₹${(index + 1) * 500}'),
-              isThreeLine: true,
-              trailing: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                   Text(
-                    isCompleted ? 'Completed' : 'Pending',
-                    style: TextStyle(
-                      color: isCompleted ? Colors.green : Colors.orange,
-                      fontWeight: FontWeight.bold,
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListTile(
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Party Name ${index + 1}', style: const TextStyle(fontWeight: FontWeight.w600)),
+                    Text(
+                      '₹${(index + 1) * 500}',
+                      style: const TextStyle(color: Color(0xFF1FA2A6), fontWeight: FontWeight.bold),
                     ),
+                  ],
+                ),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Row(
+                    children: [
+                      Icon(Icons.calendar_today_outlined, size: 14, color: Colors.grey[500]),
+                      const SizedBox(width: 4),
+                      Text('16/12/2025', style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                      const Spacer(),
+                      itemStatus(isCompleted),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text('16/12/2025', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                ],
+                ),
+                onTap: () {},
               ),
-              onTap: () {
-                // TODO: View Order Details
-              },
             ),
           );
         },
@@ -52,6 +54,24 @@ class OrderListScreen extends StatelessWidget {
           // TODO: Create Order
         },
         child: const Icon(Icons.add_shopping_cart),
+      ),
+    );
+  }
+
+  Widget itemStatus(bool isCompleted) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: isCompleted ? const Color(0xFF22C55E).withOpacity(0.1) : const Color(0xFFD4AF37).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        isCompleted ? 'Completed' : 'Pending',
+        style: TextStyle(
+          color: isCompleted ? const Color(0xFF22C55E) : const Color(0xFFD4AF37),
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }

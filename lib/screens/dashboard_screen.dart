@@ -10,20 +10,17 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         title: const Text('Dashboard'),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.deepPurple.shade700, Colors.deepPurple.shade400],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        actions: [
+            IconButton(
+              icon: const Icon(Icons.notifications_outlined),
+              onPressed: () {},
             ),
-          ),
-        ),
+        ],
       ),
       drawer: const AppDrawer(),
       body: AnimationLimiter(

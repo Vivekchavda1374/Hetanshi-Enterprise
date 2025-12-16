@@ -24,6 +24,8 @@
     late TextEditingController _nameController;
     late TextEditingController _mrpController;
     late TextEditingController _salesRateController;
+    late TextEditingController _categoryController;
+    late TextEditingController _descriptionController;
     
     // Image handling
     XFile? _selectedImage;
@@ -38,6 +40,8 @@
           TextEditingController(text: widget.product?.mrp.toString() ?? '');
       _salesRateController =
           TextEditingController(text: widget.product?.salesRate.toString() ?? '');
+      _categoryController = TextEditingController(text: widget.product?.category ?? '');
+      _descriptionController = TextEditingController(text: widget.product?.description ?? '');
       _currentImageUrl = widget.product?.imageUrl ?? '';
     }
 
@@ -46,6 +50,8 @@
       _nameController.dispose();
       _mrpController.dispose();
       _salesRateController.dispose();
+      _categoryController.dispose();
+      _descriptionController.dispose();
       super.dispose();
     }
 
@@ -94,6 +100,8 @@
           mrp: double.parse(_mrpController.text.trim()),
           salesRate: double.parse(_salesRateController.text.trim()),
           imageUrl: finalImageUrl,
+          category: _categoryController.text.trim(),
+          description: _descriptionController.text.trim(),
         );
 
         if (widget.product == null) {
@@ -117,6 +125,36 @@
       } finally {
         if (mounted) setState(() => _isLoading = false);
       }
+    }
+    
+    Future<void> _showAddCategoryDialog() async {
+      final controller = TextEditingController();
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Add Category'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(labelText: 'Category Name'),
+            textCapitalization: TextCapitalization.words,
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () async {
+                if (controller.text.isNotEmpty) {
+                   await _firestoreService.addCategory(controller.text.trim());
+                   setState(() {
+                     _categoryController.text = controller.text.trim();
+                   });
+                   if (mounted) Navigator.pop(context);
+                }
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        ),
+      );
     }
 
     @override
@@ -206,6 +244,50 @@
                     value == null || value.isEmpty ? 'Please enter name' : null,
               ),
               const SizedBox(height: 16),
+              StreamBuilder<List<String>>(
+                stream: _firestoreService.getCategories(),
+                builder: (context, snapshot) {
+                  // Wait for data or show loader? Text field was instant. 
+                  // Let's show loader inside if null.
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const LinearProgressIndicator(minHeight: 2);
+                  }
+                  
+                  final categories = snapshot.data ?? [];
+                  
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          value: categories.contains(_categoryController.text) 
+                              ? _categoryController.text 
+                              : null,
+                          decoration: const InputDecoration(
+                            labelText: 'Category', 
+                            prefixIcon: Icon(Icons.category_outlined)
+                          ),
+                          items: categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setState(() => _categoryController.text = val);
+                            }
+                          },
+                          validator: (value) => value == null && _categoryController.text.isEmpty 
+                              ? 'Select Category' 
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: _showAddCategoryDialog,
+                        icon: const Icon(Icons.add_circle, color: Color(0xFF1FA2A6), size: 30),
+                        tooltip: 'Add New Category',
+                      ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
@@ -230,6 +312,13 @@
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(labelText: 'Description', prefixIcon: Icon(Icons.description_outlined)),
+                textCapitalization: TextCapitalization.sentences,
+                maxLines: 3,
               ),
               const SizedBox(height: 24),
               SizedBox(

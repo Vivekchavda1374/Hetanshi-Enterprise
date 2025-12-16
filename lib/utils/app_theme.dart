@@ -9,8 +9,9 @@ class AppColors {
   static const Color cardWhite = Color(0xFFFFFFFF);
 
   // Status Colors
-  static const Color successGreen = Color(0xFF22C55E);
-  static const Color warningOrange = Color(0xFFF59E0B);
+  static const Color successGreen = Color(0xFF81C784);
+  static const Color warningOrange = Color(0xFFFFA726);
+  static const Color dangerRed = Color(0xFFE57373);
   static const Color errorRed = Color(0xFFEF4444);
   static const Color infoSkyBlue = Color(0xFF38BDF8);
 

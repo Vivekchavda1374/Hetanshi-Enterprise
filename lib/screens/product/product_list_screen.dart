@@ -3,6 +3,7 @@ import 'package:hetanshi_enterprise/models/product_model.dart';
 import 'package:hetanshi_enterprise/services/firestore_service.dart';
 import 'package:hetanshi_enterprise/screens/product/add_edit_product_screen.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'dart:convert';
 
 class ProductListScreen extends StatelessWidget {
   const ProductListScreen({super.key});
@@ -58,7 +59,9 @@ class ProductListScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8),
                               image: product.imageUrl.isNotEmpty
                                   ? DecorationImage(
-                                      image: NetworkImage(product.imageUrl),
+                                      image: product.imageUrl.startsWith('http')
+                                          ? NetworkImage(product.imageUrl)
+                                          : MemoryImage(base64Decode(product.imageUrl)) as ImageProvider,
                                       fit: BoxFit.cover)
                                   : null,
                             ),

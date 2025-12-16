@@ -28,4 +28,23 @@ class Party {
       address: map['address'] ?? '',
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+  
+    return other is Party &&
+      other.id == id &&
+      other.name == name &&
+      other.mobile == mobile &&
+      other.address == address;
+  }
+
+  @override
+  int get hashCode {
+    return id.hashCode ^
+      name.hashCode ^
+      mobile.hashCode ^
+      address.hashCode;
+  }
 }

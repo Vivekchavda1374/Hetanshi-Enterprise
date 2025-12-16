@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hetanshi_enterprise/models/party_model.dart';
 import 'package:hetanshi_enterprise/services/firestore_service.dart';
+import 'package:hetanshi_enterprise/utils/toast_utils.dart';
 
 class AddEditPartyScreen extends StatefulWidget {
   final Party? party;
@@ -59,15 +60,11 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
 
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Party saved successfully')),
-        );
+        ToastUtils.showSuccess(context, 'Party saved successfully');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ToastUtils.showError(context, 'Error: $e');
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

@@ -5,7 +5,8 @@
   import 'package:image_picker/image_picker.dart';
   import 'dart:convert';
   import 'dart:io';
-  import 'package:flutter/foundation.dart';
+import 'package:hetanshi_enterprise/utils/toast_utils.dart';
+import 'package:flutter/foundation.dart';
 
   class AddEditProductScreen extends StatefulWidget {
     final Product? product;
@@ -110,17 +111,9 @@
           await _firestoreService.updateProduct(product);
         }
 
-        if (mounted) {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Product saved successfully')),
-          );
-        }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e')),
-          );
+          ToastUtils.showError(context, 'Error: $e');
         }
       } finally {
         if (mounted) setState(() => _isLoading = false);
@@ -143,11 +136,14 @@
             TextButton(
               onPressed: () async {
                 if (controller.text.isNotEmpty) {
-                   await _firestoreService.addCategory(controller.text.trim());
-                   setState(() {
-                     _categoryController.text = controller.text.trim();
-                   });
-                   if (mounted) Navigator.pop(context);
+                     await _firestoreService.addCategory(controller.text.trim());
+                     setState(() {
+                       _categoryController.text = controller.text.trim();
+                     });
+                     if (context.mounted) {
+                       Navigator.pop(context);
+                       ToastUtils.showSuccess(context, 'Category added');
+                     }
                 }
               },
               child: const Text('Add'),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hetanshi_enterprise/screens/dashboard_screen.dart';
+import 'package:hetanshi_enterprise/utils/app_theme.dart';
+import 'package:hetanshi_enterprise/utils/toast_utils.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -26,14 +28,10 @@ class _LoginScreenState extends State<LoginScreen> {
         
         if (_emailController.text.trim() == 'vivek@gmail.com' && 
             _passwordController.text.trim() == '123') {
+          ToastUtils.showSuccess(context, 'Login Successful');
           Navigator.pushReplacementNamed(context, '/dashboard');
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Invalid email or password'),
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-          );
+          ToastUtils.showError(context, 'Invalid email or password');
         }
       }
     }
@@ -42,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.backgroundGrey,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -54,24 +52,24 @@ class _LoginScreenState extends State<LoginScreen> {
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1FA2A6).withOpacity(0.1),
+                    color: AppColors.secondaryTeal.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.spa, size: 64, color: Color(0xFF1FA2A6)),
+                  child: const Icon(Icons.spa, size: 64, color: AppColors.secondaryTeal),
                 ),
                 const SizedBox(height: 24),
                 Text(
                   'Hetanshi Enterprise',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1FA2A6),
+                        color: AppColors.primaryBlue,
                       ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Sign in to continue',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.grey[600],
+                        color: AppColors.textSecondary,
                       ),
                 ),
                 const SizedBox(height: 48),
@@ -115,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _submit,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1FA2A6),
+                      backgroundColor: AppColors.primaryBlue,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     child: _isLoading

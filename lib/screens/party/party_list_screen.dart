@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hetanshi_enterprise/models/party_model.dart';
 import 'package:hetanshi_enterprise/services/firestore_service.dart';
 import 'package:hetanshi_enterprise/screens/party/add_edit_party_screen.dart';
+import 'package:hetanshi_enterprise/widgets/app_drawer.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 class PartyListScreen extends StatelessWidget {
@@ -18,6 +19,7 @@ class PartyListScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
+      drawer: const AppDrawer(),
       body: StreamBuilder<List<Party>>(
         stream: firestoreService.getParties(),
         builder: (context, snapshot) {

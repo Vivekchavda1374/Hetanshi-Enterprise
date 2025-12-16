@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hetanshi_enterprise/models/order_model.dart';
 import 'package:hetanshi_enterprise/services/firestore_service.dart';
 import 'package:hetanshi_enterprise/screens/order/create_order_screen.dart';
+import 'package:hetanshi_enterprise/widgets/app_drawer.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -54,6 +55,7 @@ class OrderListScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
+      drawer: const AppDrawer(),
       body: StreamBuilder<List<OrderModel>>(
         stream: firestoreService.getOrders(),
         builder: (context, snapshot) {

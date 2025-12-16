@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:hetanshi_enterprise/models/order_model.dart';
+import 'package:hetanshi_enterprise/utils/app_theme.dart';
 import 'package:intl/intl.dart';
 
 class RevenueChart extends StatelessWidget {
@@ -54,9 +55,9 @@ class RevenueChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Colors
-    const Color primaryColor = Color(0xFF1FA2A6);
-    const Color secondaryColor = Color(0xFF6C63FF);
+    // Colors from AppTheme
+    const Color primaryColor = AppColors.primaryBlue;
+    const Color secondaryColor = AppColors.secondaryTeal;
 
     final spots = _getSpots();
     // Calculate max Y for scaling
@@ -75,7 +76,7 @@ class RevenueChart extends StatelessWidget {
           borderRadius: BorderRadius.all(
             Radius.circular(18),
           ),
-          color: Colors.white,
+          color: AppColors.cardWhite,
         ),
         child: Padding(
           padding: const EdgeInsets.only(
@@ -92,7 +93,7 @@ class RevenueChart extends StatelessWidget {
                 horizontalInterval: maxY / 5,
                 getDrawingHorizontalLine: (value) {
                   return FlLine(
-                    color: Colors.grey.withOpacity(0.1),
+                    color: AppColors.divider.withOpacity(0.5),
                     strokeWidth: 1,
                   );
                 },
@@ -122,7 +123,7 @@ class RevenueChart extends StatelessWidget {
                           child: Text(
                              DateFormat('E').format(date)[0], // M, T, W...
                              style: const TextStyle(
-                               color: Color(0xff68737d),
+                               color: AppColors.textSecondary,
                                fontWeight: FontWeight.bold,
                                fontSize: 12,
                              ),
@@ -139,7 +140,7 @@ class RevenueChart extends StatelessWidget {
                        return Text(
                          _formatCurrency(value),
                          style: const TextStyle(
-                           color: Color(0xff67727d),
+                           color: AppColors.textSecondary,
                            fontWeight: FontWeight.bold,
                            fontSize: 10,
                          ),

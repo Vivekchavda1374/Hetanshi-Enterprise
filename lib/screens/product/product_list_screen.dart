@@ -2,16 +2,44 @@ import 'package:flutter/material.dart';
 import 'package:hetanshi_enterprise/models/product_model.dart';
 import 'package:hetanshi_enterprise/services/firestore_service.dart';
 import 'package:hetanshi_enterprise/screens/product/add_edit_product_screen.dart';
+import 'package:hetanshi_enterprise/screens/product/product_detail_screen.dart';
 import 'package:hetanshi_enterprise/widgets/app_drawer.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'dart:convert';
 
 import 'package:hetanshi_enterprise/utils/app_theme.dart';
 import 'package:hetanshi_enterprise/widgets/modern_background.dart';
-import 'package:hetanshi_enterprise/utils/toast_utils.dart';
 
-class ProductListScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart'; // Make sure this is imported for styling
+import 'package:hetanshi_enterprise/models/product_model.dart';
+import 'package:hetanshi_enterprise/services/firestore_service.dart';
+import 'package:hetanshi_enterprise/screens/product/add_edit_product_screen.dart';
+import 'package:hetanshi_enterprise/screens/product/product_detail_screen.dart';
+import 'package:hetanshi_enterprise/widgets/app_drawer.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'dart:convert';
+
+import 'package:hetanshi_enterprise/utils/app_theme.dart';
+import 'package:hetanshi_enterprise/widgets/modern_background.dart';
+
+class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
+
+  @override
+  State<ProductListScreen> createState() => _ProductListScreenState();
+}
+
+class _ProductListScreenState extends State<ProductListScreen> {
+  String _searchQuery = '';
+  String _selectedCategory = 'All';
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,14 +48,10 @@ class ProductListScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.backgroundGrey,
       appBar: AppBar(
-         // AppTheme sets the default AppBar style (Blue bg, White text)
-         // But here we were using transparent. Let's stick to standard opaque AppBar for consistency
-         // per user request "AppBar Background: Blue (#2563EB)".
-         // So standard AppBar is better.
         title: const Text('Products'),
       ),
       drawer: const AppDrawer(),
-      body: ModernBackground( // Apply modern background
+      body: ModernBackground(
         child: StreamBuilder<List<Product>>(
           stream: firestoreService.getProducts(),
           builder: (context, snapshot) {
@@ -39,15 +63,32 @@ class ProductListScreen extends StatelessWidget {
               return Center(child: Text('Error: ${snapshot.error}'));
             }
 
-            final products = snapshot.data ?? [];
+            final allProducts = snapshot.data ?? [];
 
-            if (products.isEmpty) {
-              return const Center(child: Text('No products found'));
+            // 1. Extract all categories from ALL products (for the filter chips)
+            final Set<String> allCategories = {'All'};
+            for (var p in allProducts) {
+              if (p.category.isNotEmpty) {
+                allCategories.add(p.category);
+              } else {
+                allCategories.add('Uncategorized');
+              }
             }
+            final sortedAllCategories = allCategories.toList()..sort();
 
-            // Group products by category
+            // 2. Filter products based on search and selected category
+            final filteredProducts = allProducts.where((product) {
+              final matchesSearch = product.name.toLowerCase().contains(_searchQuery.toLowerCase());
+              // Use default category if empty
+              final prodCategory = product.category.isEmpty ? 'Uncategorized' : product.category;
+              final matchesCategory = _selectedCategory == 'All' || prodCategory == _selectedCategory;
+              
+              return matchesSearch && matchesCategory;
+            }).toList();
+
+            // 3. Group FILTERED products
             Map<String, List<Product>> groupedProducts = {};
-            for (var p in products) {
+            for (var p in filteredProducts) {
               String category = p.category.isEmpty ? 'Uncategorized' : p.category;
               if (!groupedProducts.containsKey(category)) {
                 groupedProducts[category] = [];
@@ -55,169 +96,178 @@ class ProductListScreen extends StatelessWidget {
               groupedProducts[category]!.add(p);
             }
 
-            // Sort categories
             final sortedCategories = groupedProducts.keys.toList()..sort();
 
-            // Create flat list for ListView
-            List<dynamic> flatList = [];
-            for (var category in sortedCategories) {
-              flatList.add(category); // Header
-              flatList.addAll(groupedProducts[category]!); // Products
-            }
+            List<Widget> slivers = [];
 
-            return AnimationLimiter(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: flatList.length,
-                itemBuilder: (context, index) {
-                  final item = flatList[index];
-
-                  if (item is String) {
-                    // Category Header
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
-                      child: Text(
-                        item,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primaryBlue,
-                        ),
-                      ),
-                    );
-                  } else if (item is Product) {
-                    // Product Card
-                    final product = item;
-                    return AnimationConfiguration.staggeredList(
-                      position: index,
-                      duration: const Duration(milliseconds: 375),
-                      child: SlideAnimation(
-                        verticalOffset: 50.0,
-                        child: FadeInAnimation(
-                          child: Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            elevation: 1, // Subtle elevation
-                            // Make cards slightly transparent to show background blur if desired, or keep white for readability
-                            color: AppColors.cardWhite.withOpacity(0.9), 
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.all(12),
-                              leading: Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  color: AppColors.backgroundGrey,
-                                  borderRadius: BorderRadius.circular(8),
-                                  image: product.imageUrl.isNotEmpty
-                                      ? DecorationImage(
-                                          image: product.imageUrl.startsWith('http')
-                                              ? NetworkImage(product.imageUrl)
-                                              : MemoryImage(base64Decode(product.imageUrl)) as ImageProvider,
-                                          fit: BoxFit.cover)
-                                      : null,
-                                ),
-                                child: product.imageUrl.isEmpty
-                                    ? const Icon(Icons.inventory_2_outlined,
-                                        color: AppColors.textDisabled)
-                                    : null,
-                              ),
-                              title: Text(product.name,
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    product.description, 
-                                    maxLines: 1, 
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.successGreen.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(4),
-                                        ),
-                                        child: Text(
-                                          'MRP: ₹${product.mrp}',
-                                          style: const TextStyle(color: AppColors.successGreen, fontWeight: FontWeight.bold, fontSize: 12),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text('Rate: ₹${product.salesRate}', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              trailing: PopupMenuButton<String>(
-                                onSelected: (value) async {
-                                  if (value == 'edit') {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            AddEditProductScreen(product: product),
-                                      ),
-                                    );
-                                  } else if (value == 'delete') {
-                                     final confirm = await showDialog<bool>(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                        title: const Text('Delete Product'),
-                                        content: const Text(
-                                            'Are you sure you want to delete this product?'),
-                                        actions: [
-                                          TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context, false),
-                                              child: const Text('Cancel')),
-                                          TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context, true),
-                                              child: const Text('Delete',
-                                                  style: TextStyle(
-                                                      color: AppColors.errorRed))),
-                                        ],
-                                      ),
-                                    );
-
-                                    if (confirm == true) {
-                                      try {
-                                        await firestoreService.deleteProduct(product.id);
-                                        if (context.mounted) {
-                                           ToastUtils.showSuccess(context, 'Product deleted');
-                                        }
-                                      } catch (e) {
-                                        if (context.mounted) {
-                                           ToastUtils.showError(context, 'Error deleting: $e');
-                                        }
-                                      }
-                                    }
-                                  }
-                                },
-                                itemBuilder: (context) => [
-                                  const PopupMenuItem(
-                                    value: 'edit',
-                                    child: Row(children: [Icon(Icons.edit, size: 20, color: AppColors.primaryBlue), SizedBox(width: 8), Text('Edit')]),
-                                  ),
-                                  const PopupMenuItem(
-                                    value: 'delete',
-                                    child: Row(children: [Icon(Icons.delete, size: 20, color: AppColors.errorRed), SizedBox(width: 8), Text('Delete')]),
-                                  ),
-                                ],
-                              ),
-                            ),
+            // --- Search and Filter Section (Pinned or BoxAdapter) ---
+            slivers.add(
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Search Bar
+                      TextField(
+                        controller: _searchController,
+                        onChanged: (value) {
+                          setState(() {
+                            _searchQuery = value;
+                          });
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'Search products...',
+                          prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
+                          suffixIcon: _searchQuery.isNotEmpty 
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear, color: AppColors.textSecondary),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() {
+                                      _searchQuery = '';
+                                    });
+                                  },
+                                ) 
+                              : null,
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide: const BorderSide(color: AppColors.primaryBlue, width: 1.5),
                           ),
                         ),
                       ),
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
+                      const SizedBox(height: 16),
+                      // Category Chips
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: sortedAllCategories.map((category) {
+                            final isSelected = _selectedCategory == category;
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: ChoiceChip(
+                                label: Text(category),
+                                selected: isSelected,
+                                onSelected: (selected) {
+                                  setState(() {
+                                    _selectedCategory = selected ? category : 'All';
+                                  });
+                                },
+                                selectedColor: AppColors.primaryBlue,
+                                labelStyle: TextStyle(
+                                  color: isSelected ? Colors.white : AppColors.textPrimary,
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                ),
+                                backgroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                  side: BorderSide(
+                                    color: isSelected ? Colors.transparent : Colors.grey.shade300,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+
+            if (filteredProducts.isEmpty) {
+               slivers.add(
+                 const SliverFillRemaining(
+                   child: Center(
+                     child: Text('No products found matching filters'),
+                   ),
+                 ),
+               );
+            } else {
+               for (var category in sortedCategories) {
+                // Add Header Sliver
+                slivers.add(
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 4, 
+                            height: 24, 
+                            decoration: BoxDecoration(
+                              color: AppColors.secondaryTeal,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            category,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primaryBlue,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+
+                // Add Grid Sliver for this category
+                final categoryProducts = groupedProducts[category]!;
+                slivers.add(
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    sliver: SliverGrid(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.75, 
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                      ),
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                           final product = categoryProducts[index];
+                           // Just a simple animation wrapper now, simpler logic
+                           return AnimationConfiguration.staggeredGrid(
+                              position: index,
+                              duration: const Duration(milliseconds: 375),
+                              columnCount: 2,
+                              child: ScaleAnimation(
+                                child: FadeInAnimation(
+                                  child: _buildProductCard(context, product),
+                                ),
+                              ),
+                           );
+                        },
+                        childCount: categoryProducts.length,
+                      ),
+                    ),
+                  ),
+                );
+              }
+            }
+
+            // Add bottom padding
+             slivers.add(const SliverToBoxAdapter(child: SizedBox(height: 80)));
+
+            return AnimationLimiter(
+              child: CustomScrollView(
+                slivers: slivers,
               ),
             );
           },
@@ -234,6 +284,102 @@ class ProductListScreen extends StatelessWidget {
         },
         backgroundColor: AppColors.secondaryTeal,
         child: const Icon(Icons.add, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _buildProductCard(BuildContext context, Product product) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ProductDetailScreen(product: product),
+          ),
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.cardWhite.withOpacity(0.95),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Image Section
+            Expanded(
+              child: Hero(
+                tag: 'product_image_${product.id}',
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                    ),
+                    color: Colors.white,
+                    image: product.imageUrl.isNotEmpty
+                        ? DecorationImage(
+                            image: product.imageUrl.startsWith('http')
+                                ? NetworkImage(product.imageUrl)
+                                : MemoryImage(base64Decode(product.imageUrl)) as ImageProvider,
+                            fit: BoxFit.contain,
+                          )
+                        : null,
+                  ),
+                  child: product.imageUrl.isEmpty
+                      ? const Center(
+                          child: Icon(Icons.inventory_2_outlined,
+                              size: 40, color: AppColors.textDisabled))
+                      : null,
+                ),
+              ),
+            ),
+            
+            // Info Section
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'MRP: ₹${product.mrp}',
+                    style: TextStyle(
+                      decoration: TextDecoration.lineThrough,
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  Text(
+                    '₹${product.salesRate}',
+                     style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: AppColors.successGreen,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

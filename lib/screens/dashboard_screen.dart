@@ -2,18 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:hetanshi_enterprise/models/order_model.dart';
 import 'package:hetanshi_enterprise/services/firestore_service.dart';
+import 'package:hetanshi_enterprise/services/notification_service.dart';
 import 'package:hetanshi_enterprise/widgets/app_drawer.dart';
 import 'package:hetanshi_enterprise/widgets/summary_card.dart';
 import 'package:hetanshi_enterprise/widgets/revenue_chart.dart';
+import 'package:hetanshi_enterprise/screens/expense/expense_list_screen.dart';
 import 'package:hetanshi_enterprise/screens/order/create_order_screen.dart';
+import 'package:hetanshi_enterprise/screens/notification_list_screen.dart';
 import 'package:intl/intl.dart';
 
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hetanshi_enterprise/widgets/modern_background.dart';
 import 'package:hetanshi_enterprise/utils/app_theme.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize Notification Service when Dashboard loads
+    NotificationService().initialize(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,55 +66,89 @@ class DashboardScreen extends StatelessWidget {
                           builder: (context, productSnapshot) {
                             final totalProducts = productSnapshot.data ?? 0;
 
-                            return AnimationLimiter(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: AnimationConfiguration.toStaggeredList(
-                                  duration: const Duration(milliseconds: 375),
-                                  childAnimationBuilder: (widget) => SlideAnimation(
-                                    verticalOffset: 50.0,
-                                    child: FadeInAnimation(
-                                      child: widget,
-                                    ),
-                                  ),
-                                  children: [
-                                    // Removed old welcome text, integrated into header
-                                    
-                                    GridView.count(
-                                      shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      crossAxisCount: 2,
-                                      crossAxisSpacing: 16,
-                                      mainAxisSpacing: 16,
-                                      childAspectRatio: 1.1, 
+                            return StreamBuilder<double>(
+                              stream: firestoreService.getTotalExpenses(),
+                              builder: (context, expenseSnapshot) {
+                                final totalExpenses = expenseSnapshot.data ?? 0.0;
+                                final netProfit = totalRevenue - totalExpenses;
+
+                                return AnimationLimiter(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: AnimationConfiguration.toStaggeredList(
+                                      duration: const Duration(milliseconds: 375),
+                                      childAnimationBuilder: (widget) => SlideAnimation(
+                                        verticalOffset: 50.0,
+                                        child: FadeInAnimation(
+                                          child: widget,
+                                        ),
+                                      ),
                                       children: [
-                                        SummaryCard(
-                                          title: 'Revenue',
-                                          value: '₹${NumberFormat.compactCurrency(symbol: '').format(totalRevenue)}',
-                                          icon: Icons.currency_rupee,
-                                          color: AppColors.primaryBlue, // Primary
+                                        GridView.count(
+                                          shrinkWrap: true,
+                                          physics: const NeverScrollableScrollPhysics(),
+                                          crossAxisCount: 2,
+                                          crossAxisSpacing: 16,
+                                          mainAxisSpacing: 16,
+                                          childAspectRatio: 1.1, 
+                                          children: [
+                                            // 1. Net Profit (Most Important)
+                                            SummaryCard(
+                                              title: 'Net Profit',
+                                              value: '₹${NumberFormat.compactCurrency(symbol: '').format(netProfit)}',
+                                              icon: Icons.monetization_on,
+                                              color: netProfit >= 0 ? AppColors.successGreen : AppColors.dangerRed,
+                                            ),
+                                            // 2. Revenue
+                                            SummaryCard(
+                                              title: 'Revenue',
+                                              value: '₹${NumberFormat.compactCurrency(symbol: '').format(totalRevenue)}',
+                                              icon: Icons.currency_rupee,
+                                              color: AppColors.primaryBlue, 
+                                            ),
+                                            // 3. Expenses (Clickable)
+                                            InkWell(
+                                              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExpenseListScreen())),
+                                              child: SummaryCard(
+                                                title: 'Expenses',
+                                                value: '₹${NumberFormat.compactCurrency(symbol: '').format(totalExpenses)}',
+                                                icon: Icons.money_off,
+                                                color: AppColors.dangerRed,
+                                              ),
+                                            ),
+                                            // 4. Orders
+                                            SummaryCard(
+                                              title: 'Orders',
+                                              value: totalOrders.toString(),
+                                              icon: Icons.shopping_bag_outlined,
+                                              color: AppColors.secondaryTeal,
+                                            ),
+                                          ],
                                         ),
-                                        SummaryCard(
-                                          title: 'Orders',
-                                          value: totalOrders.toString(),
-                                          icon: Icons.shopping_bag_outlined,
-                                          color: AppColors.secondaryTeal, // Secondary
+                                        const SizedBox(height: 24),
+                                        // Row for Product/Party counts (Secondary Info)
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: SummaryCard(
+                                                title: 'Parties',
+                                                value: activeParties.toString(),
+                                                icon: Icons.people_outline,
+                                                color: AppColors.infoSkyBlue,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 16),
+                                            Expanded(
+                                              child: SummaryCard(
+                                                title: 'Products',
+                                                value: totalProducts.toString(),
+                                                icon: Icons.inventory_2_outlined,
+                                                color: AppColors.warningOrange,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        SummaryCard(
-                                          title: 'Parties',
-                                          value: activeParties.toString(),
-                                          icon: Icons.people_outline,
-                                          color: AppColors.infoSkyBlue, // Info
-                                        ),
-                                        SummaryCard(
-                                          title: 'Products',
-                                          value: totalProducts.toString(),
-                                          icon: Icons.inventory_2_outlined,
-                                          color: AppColors.warningOrange, // Warning/Inventory
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 24),
+                                        const SizedBox(height: 24),
                                     Text(
                                       "Revenue Trends",
                                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -157,9 +207,10 @@ class DashboardScreen extends StatelessWidget {
                                           );
                                         },
                                       ),
-                                  ],
-                                ),
-                              ),
+                                    ],
+                                  ),
+                                );
+                              },
                             );
                           },
                         );
@@ -214,7 +265,12 @@ class DashboardScreen extends StatelessWidget {
                ),
                IconButton(
                  icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-                 onPressed: () {},
+                 onPressed: () {
+                   Navigator.push(
+                     context,
+                     MaterialPageRoute(builder: (context) => const NotificationListScreen()),
+                   );
+                 },
                ),
             ],
           ),

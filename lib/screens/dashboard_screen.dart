@@ -127,26 +127,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         ),
                                         const SizedBox(height: 24),
                                         // Row for Product/Party counts (Secondary Info)
-                                        Row(
-                                          children: [
-                                            Expanded(
-                                              child: SummaryCard(
-                                                title: 'Parties',
-                                                value: activeParties.toString(),
-                                                icon: Icons.people_outline,
-                                                color: AppColors.infoSkyBlue,
+                                        SizedBox(
+                                          height: 160,
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                child: SummaryCard(
+                                                  title: 'Parties',
+                                                  value: activeParties.toString(),
+                                                  icon: Icons.people_outline,
+                                                  color: AppColors.infoSkyBlue,
+                                                ),
                                               ),
-                                            ),
-                                            const SizedBox(width: 16),
-                                            Expanded(
-                                              child: SummaryCard(
-                                                title: 'Products',
-                                                value: totalProducts.toString(),
-                                                icon: Icons.inventory_2_outlined,
-                                                color: AppColors.warningOrange,
+                                              const SizedBox(width: 16),
+                                              Expanded(
+                                                child: SummaryCard(
+                                                  title: 'Products',
+                                                  value: totalProducts.toString(),
+                                                  icon: Icons.inventory_2_outlined,
+                                                  color: AppColors.warningOrange,
+                                                ),
                                               ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
                                         const SizedBox(height: 24),
                                     Text(
@@ -202,20 +205,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                               subtitle: Text(
                                                   '${DateFormat('dd MMM, hh:mm a').format(order.date)}',
                                                   style: const TextStyle(color: AppColors.textSecondary)),
-                                              trailing: Text('₹${order.totalAmount.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
                                             ),
                                           );
                                         },
                                       ),
                                     ],
                                   ),
-                                );
-                              },
-                            );
-                          },
-                        );
-                      },
-                    );
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  );
                   },
                 ),
               ),

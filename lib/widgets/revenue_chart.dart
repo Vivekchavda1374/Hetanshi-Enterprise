@@ -1,11 +1,73 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:hetanshi_enterprise/models/order_model.dart';
+import 'package:intl/intl.dart';
 
 class RevenueChart extends StatelessWidget {
-  const RevenueChart({super.key});
+  final List<OrderModel> orders;
+
+  const RevenueChart({super.key, required this.orders});
+
+  List<FlSpot> _getSpots() {
+    // 1. Get last 7 days
+    final now = DateTime.now();
+    final sevenDaysAgo = now.subtract(const Duration(days: 6));
+    
+    // 2. Initialize map with 0.0 for all days
+    Map<int, double> dailyRevenue = {};
+    for (int i = 0; i < 7; i++) {
+      dailyRevenue[i] = 0.0;
+    }
+
+    // 3. Aggregate revenue
+    for (var order in orders) {
+      if (order.date.isAfter(sevenDaysAgo)) { // Only consider recent orders
+         // Calculate difference in days from 6 days ago (start of chart) to normalize x-axis to 0-6
+         // logic: 
+         // day 0 = 6 days ago
+         // day 6 = today
+         
+         // Let's simplify: compare date day to today. 
+         // Actually, simpler approach:
+         // For each of the last 7 days, sum up orders.
+      }
+    }
+    
+    List<FlSpot> spots = [];
+    
+    for (int i = 0; i < 7; i++) {
+        final dateOfInterest = sevenDaysAgo.add(Duration(days: i));
+        // Find orders on this day (ignoring time)
+        double sum = 0;
+        for(var order in orders) {
+             if (order.date.year == dateOfInterest.year && 
+                 order.date.month == dateOfInterest.month && 
+                 order.date.day == dateOfInterest.day) {
+                 sum += order.totalAmount;
+             }
+        }
+        spots.add(FlSpot(i.toDouble(), sum));
+    }
+
+    return spots;
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Colors
+    const Color primaryColor = Color(0xFF1FA2A6);
+    const Color secondaryColor = Color(0xFF6C63FF);
+
+    final spots = _getSpots();
+    // Calculate max Y for scaling
+    double maxY = 0;
+    for (var spot in spots) {
+        if (spot.y > maxY) maxY = spot.y;
+    }
+    // Add some buffer
+    maxY = maxY * 1.2; 
+    if (maxY == 0) maxY = 1000;
+
     return AspectRatio(
       aspectRatio: 1.70,
       child: Container(
@@ -23,149 +85,112 @@ class RevenueChart extends StatelessWidget {
             bottom: 12,
           ),
           child: LineChart(
-            mainData(),
-          ),
-        ),
-      ),
-    );
-  }
-
-  LineChartData mainData() {
-    return LineChartData(
-      gridData: FlGridData(
-        show: true,
-        drawVerticalLine: true,
-        horizontalInterval: 1,
-        verticalInterval: 1,
-        getDrawingHorizontalLine: (value) {
-          return FlLine(
-            color: Colors.grey.shade100,
-            strokeWidth: 1,
-          );
-        },
-        getDrawingVerticalLine: (value) {
-          return FlLine(
-            color: Colors.grey.shade100,
-            strokeWidth: 1,
-          );
-        },
-      ),
-      titlesData: FlTitlesData(
-        show: true,
-        rightTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        topTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            reservedSize: 30,
-            interval: 1,
-            getTitlesWidget: bottomTitleWidgets,
-          ),
-        ),
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            interval: 1,
-            getTitlesWidget: leftTitleWidgets,
-            reservedSize: 42,
-          ),
-        ),
-      ),
-      borderData: FlBorderData(
-        show: true,
-        border: Border.all(color: const Color(0xff37434d)),
-      ),
-      minX: 0,
-      maxX: 11,
-      minY: 0,
-      maxY: 6,
-      lineBarsData: [
-        LineChartBarData(
-          spots: const [
-            FlSpot(0, 3),
-            FlSpot(2.6, 2),
-            FlSpot(4.9, 5),
-            FlSpot(6.8, 3.1),
-            FlSpot(8, 4),
-            FlSpot(9.5, 3),
-            FlSpot(11, 4),
-          ],
-          isCurved: true,
-          gradient: const LinearGradient(
-            colors: [
-              Color(0xFF1FA2A6), // Deep Teal
-              Color(0xFFD4AF37), // Gold
-            ],
-          ),
-          barWidth: 5,
-          isStrokeCapRound: true,
-          dotData: const FlDotData(
-            show: false,
-          ),
-          belowBarData: BarAreaData(
-            show: true,
-            gradient: LinearGradient(
-              colors: [
-                const Color(0xFF1FA2A6).withOpacity(0.1),
-                const Color(0xFFD4AF37).withOpacity(0.1),
+            LineChartData(
+              gridData: FlGridData(
+                show: true,
+                drawVerticalLine: false,
+                horizontalInterval: maxY / 5,
+                getDrawingHorizontalLine: (value) {
+                  return FlLine(
+                    color: Colors.grey.withOpacity(0.1),
+                    strokeWidth: 1,
+                  );
+                },
+              ),
+              titlesData: FlTitlesData(
+                show: true,
+                rightTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                topTitles: const AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    reservedSize: 30,
+                    interval: 1,
+                    getTitlesWidget: (value, meta) {
+                        final index = value.toInt();
+                        if (index < 0 || index >= 7) return const Text('');
+                        
+                        final now = DateTime.now();
+                        final date = now.subtract(Duration(days: 6 - index));
+                        
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                             DateFormat('E').format(date)[0], // M, T, W...
+                             style: const TextStyle(
+                               color: Color(0xff68737d),
+                               fontWeight: FontWeight.bold,
+                               fontSize: 12,
+                             ),
+                          ),
+                        );
+                    },
+                  ),
+                ),
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    interval: maxY / 5,
+                    getTitlesWidget: (value, meta) {
+                       return Text(
+                         _formatCurrency(value),
+                         style: const TextStyle(
+                           color: Color(0xff67727d),
+                           fontWeight: FontWeight.bold,
+                           fontSize: 10,
+                         ),
+                       );
+                    },
+                    reservedSize: 42,
+                  ),
+                ),
+              ),
+              borderData: FlBorderData(
+                show: true,
+                border: Border.all(color: const Color(0xff37434d).withOpacity(0.1)),
+              ),
+              minX: 0,
+              maxX: 6,
+              minY: 0,
+              maxY: maxY,
+              lineBarsData: [
+                LineChartBarData(
+                  spots: spots,
+                  isCurved: true,
+                  gradient: const LinearGradient(
+                    colors: [secondaryColor, primaryColor],
+                  ),
+                  barWidth: 4,
+                  isStrokeCapRound: true,
+                  dotData: const FlDotData(
+                    show: false,
+                  ),
+                  belowBarData: BarAreaData(
+                    show: true,
+                    gradient: LinearGradient(
+                      colors: [
+                        secondaryColor.withOpacity(0.3),
+                        primaryColor.withOpacity(0.3),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
         ),
-      ],
+      ),
     );
   }
-
-  Widget bottomTitleWidgets(double value, TitleMeta meta) {
-    final style = TextStyle(
-      fontWeight: FontWeight.w600,
-      fontSize: 12,
-      color: Colors.grey[400],
-    );
-    Widget text;
-    switch (value.toInt()) {
-      case 2:
-        text = Text('MAR', style: style);
-        break;
-      case 5:
-        text = Text('JUN', style: style);
-        break;
-      case 8:
-        text = Text('SEP', style: style);
-        break;
-      default:
-        text = Text('', style: style);
-        break;
-    }
-
-    return text;
-  }
-
-  Widget leftTitleWidgets(double value, TitleMeta meta) {
-    final style = TextStyle(
-      fontWeight: FontWeight.w600,
-      fontSize: 12,
-      color: Colors.grey[400],
-    );
-    String text;
-    switch (value.toInt()) {
-      case 1:
-        text = '10k';
-        break;
-      case 3:
-        text = '30k';
-        break;
-      case 5:
-        text = '50k';
-        break;
-      default:
-        return Container();
-    }
-
-    return Text(text, style: style, textAlign: TextAlign.left);
+  
+  String _formatCurrency(double value) {
+      if (value >= 1000) {
+          return '${(value / 1000).toStringAsFixed(1)}k';
+      }
+      return value.toInt().toString();
   }
 }

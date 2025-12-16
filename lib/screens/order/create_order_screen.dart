@@ -5,6 +5,8 @@ import 'package:hetanshi_enterprise/models/product_model.dart';
 import 'package:hetanshi_enterprise/models/order_model.dart';
 import 'package:hetanshi_enterprise/services/firestore_service.dart';
 import 'package:hetanshi_enterprise/utils/toast_utils.dart';
+import 'package:hetanshi_enterprise/widgets/modern_background.dart';
+import 'package:hetanshi_enterprise/utils/app_theme.dart';
 
 class CreateOrderScreen extends StatefulWidget {
   const CreateOrderScreen({super.key});
@@ -33,27 +35,35 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      backgroundColor: Colors.transparent, // Transparent to show rounded corners nicely
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                  left: 16,
-                  right: 16,
-                  top: 24),
-              child: Column(
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              left: 20,
+              right: 20,
+              top: 24),
+          child: StatefulBuilder(
+            builder: (context, setSheetState) {
+              return Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Add Item',
                       style: GoogleFonts.poppins(
-                          fontSize: 20, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 16),
+                          fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.primaryBlue)),
+                  const SizedBox(height: 20),
                   DropdownButtonFormField<Product>(
-                    decoration: const InputDecoration(labelText: 'Select Product'),
+                    decoration: InputDecoration(
+                        labelText: 'Select Product',
+                        filled: true,
+                        fillColor: Colors.grey[50], 
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                    ),
                     items: products.map((product) {
                       return DropdownMenuItem(
                         value: product,
@@ -75,7 +85,12 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                       Expanded(
                         child: TextFormField(
                           controller: _quantityController,
-                          decoration: const InputDecoration(labelText: 'Quantity'),
+                          decoration: InputDecoration(
+                              labelText: 'Quantity',
+                              filled: true,
+                              fillColor: Colors.grey[50],
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                          ),
                           keyboardType: TextInputType.number,
                           onChanged: (val) {
                             setSheetState(() {});
@@ -86,22 +101,41 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                       Expanded(
                         child: TextFormField(
                           controller: _rateController,
-                          decoration: const InputDecoration(labelText: 'Rate'),
+                          decoration: InputDecoration(
+                              labelText: 'Rate',
+                              filled: true,
+                              fillColor: Colors.grey[50],
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                          ),
                           keyboardType: TextInputType.number,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
                   if (_selectedProduct != null)
-                    Text(
-                      'Total: ₹${(double.tryParse(_quantityController.text) ?? 0) * (double.tryParse(_rateController.text) ?? 0)}',
-                      style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w600, color: Colors.green),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.successGreen.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                            const Text("Item Total:"),
+                            Text(
+                              '₹${(double.tryParse(_quantityController.text) ?? 0) * (double.tryParse(_rateController.text) ?? 0)}',
+                              style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.bold, color: AppColors.successGreen, fontSize: 18),
+                            ),
+                        ],
+                      ),
                     ),
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
+                    height: 50,
                     child: ElevatedButton(
                       onPressed: _selectedProduct == null
                           ? null
@@ -123,15 +157,18 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
                               }
                             },
                       style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16)),
-                      child: const Text('Add to Order'),
+                          backgroundColor: AppColors.primaryBlue,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text('Add to Order', style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
                   const SizedBox(height: 24),
                 ],
-              ),
-            );
-          },
+              );
+            },
+          ),
         );
       },
     );
@@ -174,160 +211,222 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: AppColors.backgroundGrey,
       appBar: AppBar(
         title: const Text('New Order'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        // Standard AppBar to keep back functionality clear
       ),
-      body: StreamBuilder<List<Party>>(
-          stream: _firestoreService.getParties(),
-          builder: (context, partySnapshot) {
-            final parties = partySnapshot.data ?? [];
+      body: ModernBackground(
+        child: StreamBuilder<List<Party>>(
+            stream: _firestoreService.getParties(),
+            builder: (context, partySnapshot) {
+              final parties = partySnapshot.data ?? [];
 
-            return StreamBuilder<List<Product>>(
-              stream: _firestoreService.getProducts(),
-              builder: (context, productSnapshot) {
-                final products = productSnapshot.data ?? [];
+              return StreamBuilder<List<Product>>(
+                stream: _firestoreService.getProducts(),
+                builder: (context, productSnapshot) {
+                  final products = productSnapshot.data ?? [];
 
-                return Column(
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            DropdownButtonFormField<Party>(
-                              decoration: const InputDecoration(
-                                labelText: 'Select Party',
-                                prefixIcon: Icon(Icons.person_outline),
-                              ),
-                              items: parties.map((party) {
-                                return DropdownMenuItem(
-                                  value: party,
-                                  child: Text(party.name),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedParty = value;
-                                });
-                              },
-                            ),
-                            const SizedBox(height: 24),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('Items',
-                                    style: GoogleFonts.poppins(
-                                        fontSize: 18, fontWeight: FontWeight.w600)),
-                                TextButton.icon(
-                                  onPressed: () => _showAddProductSheet(products),
-                                  icon: const Icon(Icons.add),
-                                  label: const Text('Add Item'),
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Party Selection Card
+                              Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.9),
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4))],
                                 ),
-                              ],
-                            ),
-                            const Divider(),
-                            if (_orderItems.isEmpty)
-                              const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 32),
-                                child: Center(
-                                    child: Text('No items added',
-                                        style: TextStyle(color: Colors.grey))),
-                              )
-                            else
-                              ListView.separated(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: _orderItems.length,
-                                separatorBuilder: (ctx, i) => const Divider(height: 1),
-                                itemBuilder: (context, index) {
-                                  final item = _orderItems[index];
-                                  return ListTile(
-                                    title: Text(item.productName),
-                                    subtitle: Text(
-                                        '${item.quantity} x ₹${item.rate}'),
-                                    trailing: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text('₹${item.amount.toStringAsFixed(2)}',
-                                            style: const TextStyle(fontWeight: FontWeight.bold)),
-                                        IconButton(
-                                            icon: const Icon(Icons.close, color: Colors.grey, size: 20),
-                                            onPressed: () {
-                                              setState(() {
-                                                _orderItems.removeAt(index);
-                                              });
-                                            }),
-                                      ],
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                      Text("Party Details", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                                      const SizedBox(height: 12),
+                                      DropdownButtonFormField<Party>(
+                                        decoration: InputDecoration(
+                                          labelText: 'Select Party',
+                                          prefixIcon: const Icon(Icons.person_outline),
+                                          filled: true,
+                                          fillColor: Colors.grey[50],
+                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                                        ),
+                                        items: parties.map((party) {
+                                          return DropdownMenuItem(
+                                            value: party,
+                                            child: Text(party.name),
+                                          );
+                                        }).toList(),
+                                        onChanged: (value) {
+                                          setState(() {
+                                            _selectedParty = value;
+                                          });
+                                        },
+                                      ),
+                                  ],
+                                ),
+                              ),
+
+
+                              const SizedBox(height: 24),
+                              
+                              // Items Header
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('Items',
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                                  ElevatedButton.icon(
+                                    onPressed: () => _showAddProductSheet(products),
+                                    icon: const Icon(Icons.add, size: 18),
+                                    label: const Text('Add Item'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.secondaryTeal,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
                                     ),
-                                  );
-                                },
+                                  ),
+                                ],
                               ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(24)),
-                        boxShadow: [
-                          BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -5))
-                        ],
-                      ),
-                      child: SafeArea(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('Total Amount',
-                                    style: GoogleFonts.poppins(fontSize: 16)),
-                                Text('₹${_totalAmount.toStringAsFixed(2)}',
-                                    style: GoogleFonts.poppins(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: const Color(0xFF1FA2A6))),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed:
-                                    _isLoading || _selectedParty == null || _orderItems.isEmpty
-                                        ? null
-                                        : _saveOrder,
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                              const SizedBox(height: 12),
+                              
+                              if (_orderItems.isEmpty)
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(vertical: 40),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.5),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: Colors.white),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      const Icon(Icons.shopping_cart_outlined, size: 40, color: Colors.grey),
+                                      const SizedBox(height: 8),
+                                      Text('No items added', style: TextStyle(color: Colors.grey[600])),
+                                    ],
+                                  ),
+                                )
+                              else
+                                ListView.separated(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: _orderItems.length,
+                                  separatorBuilder: (ctx, i) => const SizedBox(height: 12),
+                                  itemBuilder: (context, index) {
+                                    final item = _orderItems[index];
+                                    return Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.9),
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
+                                      ),
+                                      child: ListTile(
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                        leading: CircleAvatar(
+                                          backgroundColor: AppColors.primaryBlue.withOpacity(0.1),
+                                          child: Text('${index + 1}', style: const TextStyle(color: AppColors.primaryBlue, fontWeight: FontWeight.bold)),
+                                        ),
+                                        title: Text(item.productName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                        subtitle: Text(
+                                            '${item.quantity} x ₹${item.rate}', style: TextStyle(color: AppColors.textSecondary)),
+                                        trailing: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text('₹${item.amount.toStringAsFixed(2)}',
+                                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.successGreen)),
+                                            const SizedBox(width: 8),
+                                            IconButton(
+                                                icon: const Icon(Icons.close, color: AppColors.errorRed, size: 20),
+                                                onPressed: () {
+                                                  setState(() {
+                                                    _orderItems.removeAt(index);
+                                                  });
+                                                }),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
-                                child: _isLoading
-                                    ? const SizedBox(
-                                        height: 20,
-                                        width: 20,
-                                        child: CircularProgressIndicator(
-                                            color: Colors.white, strokeWidth: 2),
-                                      )
-                                    : Text('Create Order',
-                                        style: GoogleFonts.poppins(
-                                            fontSize: 16, fontWeight: FontWeight.w600)),
-                              ),
-                            ),
-                          ],
+                              // Space for floating button
+                              const SizedBox(height: 100),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                );
-              },
-            );
-          }),
+                      
+                      // Bottom Sheet for Total and Save
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius:
+                              const BorderRadius.vertical(top: Radius.circular(30)),
+                          boxShadow: [
+                            BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 20, offset: const Offset(0, -5))
+                          ],
+                        ),
+                        child: SafeArea(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('Total Amount', style: GoogleFonts.poppins(fontSize: 16, color: AppColors.textSecondary)),
+                                  Text('₹${_totalAmount.toStringAsFixed(2)}',
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.primaryBlue)),
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+                              SizedBox(
+                                width: double.infinity,
+                                height: 54,
+                                child: ElevatedButton(
+                                  onPressed:
+                                      _isLoading || _selectedParty == null || _orderItems.isEmpty
+                                          ? null
+                                          : _saveOrder,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primaryBlue,
+                                    foregroundColor: Colors.white,
+                                    elevation: 4,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                  ),
+                                  child: _isLoading
+                                      ? const SizedBox(
+                                          height: 24,
+                                          width: 24,
+                                          child: CircularProgressIndicator(
+                                              color: Colors.white, strokeWidth: 2),
+                                        )
+                                      : Text('Create Order',
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 18, fontWeight: FontWeight.w600)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+            }),
+      ),
     );
   }
 }
+

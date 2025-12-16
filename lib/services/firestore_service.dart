@@ -10,6 +10,7 @@ class FirestoreService {
   CollectionReference get _products => _db.collection('products');
   CollectionReference get _parties => _db.collection('parties');
   CollectionReference get _orders => _db.collection('orders');
+  CollectionReference get _categories => _db.collection('categories');
 
   // --- Products ---
   Stream<List<Product>> getProducts() {
@@ -76,6 +77,21 @@ class FirestoreService {
 
   Future<void> addOrder(OrderModel order) {
     return _orders.add(order.toMap());
+  }
+
+  // --- Categories ---
+  Stream<List<String>> getCategories() {
+    return _categories.orderBy('name').snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) => doc['name'] as String).toList();
+    });
+  }
+
+  Future<void> addCategory(String name) async {
+    // Check if exists first to avoid duplicates (optional but good)
+    final query = await _categories.where('name', isEqualTo: name).get();
+    if (query.docs.isEmpty) {
+      await _categories.add({'name': name});
+    }
   }
 
   // --- Analytics ---

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:hetanshi_enterprise/screens/order/order_history_screen.dart';
+import 'package:hetanshi_enterprise/screens/expense/expense_list_screen.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -26,10 +28,7 @@ class AppDrawer extends StatelessWidget {
                   'Hetanshi Enterprise',
                   style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
-                Text(
-                  'user@example.com',
-                  style: TextStyle(color: Colors.white70),
-                ),
+               
               ],
             ),
           ),
@@ -66,6 +65,17 @@ class AppDrawer extends StatelessWidget {
             title: const Text('Order History'),
             onTap: () {
                Navigator.pushReplacementNamed(context, '/history');
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.money_off, color: AppColors.dangerRed),
+            title: const Text('Expenses'),
+            onTap: () {
+               Navigator.pop(context); // Close drawer
+               Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ExpenseListScreen()),
+              );
             },
           ),
           const Divider(),

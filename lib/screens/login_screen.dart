@@ -27,7 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) {
         setState(() { _isLoading = false; });
         
-        if (_emailController.text.trim() == 'vivek@gmail.com' && 
+        if (_emailController.text.trim() == 'hetanshi@gmail.com' && 
             _passwordController.text.trim() == '123') {
           ToastUtils.showSuccess(context, 'Login Successful');
           Navigator.pushReplacementNamed(context, '/dashboard');

@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hetanshi_enterprise/models/party_model.dart';
 import 'package:hetanshi_enterprise/services/firestore_service.dart';
 import 'package:hetanshi_enterprise/utils/toast_utils.dart';
+import 'package:hetanshi_enterprise/widgets/modern_background.dart';
+import 'package:hetanshi_enterprise/utils/app_theme.dart';
 
 class AddEditPartyScreen extends StatefulWidget {
   final Party? party;
@@ -74,71 +76,128 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: AppColors.backgroundGrey,
       appBar: AppBar(
         title: Text(widget.party == null ? 'Add Party' : 'Edit Party'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
+        // Standard AppBar for consistent navigation stack behavior
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
+      body: ModernBackground(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Party Name',
-                  prefixIcon: Icon(Icons.person_outline),
+              // Form Container
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                textCapitalization: TextCapitalization.words,
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Please enter name' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _mobileController,
-                decoration: const InputDecoration(
-                  labelText: 'Mobile Number',
-                  prefixIcon: Icon(Icons.phone_outlined),
-                ),
-                keyboardType: TextInputType.phone,
-                validator: (value) => value == null || value.isEmpty
-                    ? 'Please enter mobile number'
-                    : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _addressController,
-                decoration: const InputDecoration(
-                  labelText: 'Address',
-                  prefixIcon: Icon(Icons.location_on_outlined),
-                ),
-                maxLines: 3,
-                textCapitalization: TextCapitalization.sentences,
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Please enter address' : null,
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _saveParty,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                        )
-                      : Text(
-                          widget.party == null ? 'Add Party' : 'Update Party',
-                          style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+                padding: const EdgeInsets.all(24),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                       // Header Icon
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryBlue.withOpacity(0.1),
+                          shape: BoxShape.circle,
                         ),
+                        child: Icon(
+                          widget.party == null ? Icons.person_add_rounded : Icons.edit_rounded,
+                          size: 40,
+                          color: AppColors.primaryBlue,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Name Field
+                      TextFormField(
+                        controller: _nameController,
+                        decoration: InputDecoration(
+                          labelText: 'Party Name',
+                          prefixIcon: const Icon(Icons.person_outline),
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                        ),
+                        textCapitalization: TextCapitalization.words,
+                        validator: (value) =>
+                            value == null || value.isEmpty ? 'Please enter name' : null,
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Mobile Field
+                      TextFormField(
+                        controller: _mobileController,
+                        decoration: InputDecoration(
+                          labelText: 'Mobile Number',
+                          prefixIcon: const Icon(Icons.phone_outlined),
+                          filled: true,
+                          fillColor: Colors.grey[50], 
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                        ),
+                        keyboardType: TextInputType.phone,
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Please enter mobile number'
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Address Field
+                      TextFormField(
+                        controller: _addressController,
+                        decoration: InputDecoration(
+                          labelText: 'Address',
+                          prefixIcon: const Icon(Icons.location_on_outlined),
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                        ),
+                        maxLines: 3,
+                        textCapitalization: TextCapitalization.sentences,
+                        validator: (value) =>
+                            value == null || value.isEmpty ? 'Please enter address' : null,
+                      ),
+                      const SizedBox(height: 32),
+
+                      // Save Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _saveParty,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryBlue,
+                            foregroundColor: Colors.white,
+                            elevation: 4,
+                            shadowColor: AppColors.primaryBlue.withOpacity(0.4),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                                )
+                              : Text(
+                                  widget.party == null ? 'Save Party' : 'Update Party',
+                                  style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -148,3 +207,4 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
     );
   }
 }
+

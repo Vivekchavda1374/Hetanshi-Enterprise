@@ -1,16 +1,38 @@
-# hetanshi_enterprise
+# Hetanshi Enterprise
 
-A new Flutter project.
+A Flutter-based Inventory and Order Management System for Hetanshi Enterprise.
+
+## Features
+- **Dashboard**: Real-time overview of Revenue, Net Profit, and Expenses.
+- **Order Management**: Create and track orders for different parties.
+- **Expense Tracker**: manage business expenses and calculate profit.
+- **Party & Product Management**: Manage catalogs of products and customer details.
+- **Notifications**: System alerts and updates.
+- **Reports**: Generate PDF reports (Invoices).
+
+## Tech Stack
+- **Framework**: Flutter (Dart)
+- **Backend**: Firebase Firestore
+- **State Management**: setState / Streams
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/yourusername/hetanshi-enterprise.git
+    ```
+2.  **Install dependencies**:
+    ```bash
+    flutter pub get
+    ```
+3.  **Setup Firebase**:
+    - This project relies on Firebase.
+    - You will need to provide your own `google-services.json` (Android) and `GoogleService-Info.plist` (iOS).
+    - Generate `firebase_options.dart` using FlutterFire CLI.
+4.  **Run the app**:
+    ```bash
+    flutter run
+    ```
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Contributing
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.

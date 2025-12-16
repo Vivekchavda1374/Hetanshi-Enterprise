@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hetanshi_enterprise/models/party_model.dart';
 import 'package:hetanshi_enterprise/models/product_model.dart';
 import 'package:hetanshi_enterprise/models/order_model.dart';
+import 'package:hetanshi_enterprise/models/expense_model.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -11,6 +12,34 @@ class FirestoreService {
   CollectionReference get _parties => _db.collection('parties');
   CollectionReference get _orders => _db.collection('orders');
   CollectionReference get _categories => _db.collection('categories');
+  CollectionReference get _notifications => _db.collection('notifications');
+  CollectionReference get _expenses => _db.collection('expenses');
+
+  // --- Expenses ---
+  Stream<List<ExpenseModel>> getExpenses() {
+    return _expenses.orderBy('date', descending: true).snapshots().map((snapshot) {
+      return snapshot.docs
+          .map((doc) => ExpenseModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+          .toList();
+    });
+  }
+
+  Future<void> addExpense(ExpenseModel expense) {
+    return _expenses.add(expense.toMap());
+  }
+
+  Future<void> deleteExpense(String id) {
+    return _expenses.doc(id).delete();
+  }
+
+  Stream<double> getTotalExpenses() {
+    return _expenses.snapshots().map((snapshot) {
+        return snapshot.docs.fold(0.0, (sum, doc) {
+           final data = doc.data() as Map<String, dynamic>;
+           return sum + (data['amount'] ?? 0.0);
+        });
+    });
+  }
 
   // --- Products ---
   Stream<List<Product>> getProducts() {
@@ -105,5 +134,19 @@ class FirestoreService {
 
   Stream<int> getOrderCount() {
     return _orders.snapshots().map((s) => s.size);
+  }
+
+  // --- Notifications ---
+  Stream<QuerySnapshot> getNotifications() {
+    return _notifications.orderBy('timestamp', descending: true).snapshots();
+  }
+
+  Future<void> addNotification(String title, String body) {
+    return _notifications.add({
+      'title': title,
+      'body': body,
+      'timestamp': FieldValue.serverTimestamp(),
+      'read': false,
+    });
   }
 }

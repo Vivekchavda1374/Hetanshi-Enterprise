@@ -4,6 +4,7 @@ import 'package:hetanshi_enterprise/models/party_model.dart';
 import 'package:hetanshi_enterprise/models/product_model.dart';
 import 'package:hetanshi_enterprise/models/order_model.dart';
 import 'package:hetanshi_enterprise/services/firestore_service.dart';
+import 'package:hetanshi_enterprise/utils/toast_utils.dart';
 
 class CreateOrderScreen extends StatefulWidget {
   const CreateOrderScreen({super.key});
@@ -159,15 +160,11 @@ class _CreateOrderScreenState extends State<CreateOrderScreen> {
 
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Order created successfully')),
-        );
+        ToastUtils.showSuccess(context, 'Order created successfully');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ToastUtils.showError(context, 'Error: $e');
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hetanshi_enterprise/screens/login_screen.dart';
 import 'package:hetanshi_enterprise/screens/dashboard_screen.dart';
 import 'package:hetanshi_enterprise/screens/product/product_list_screen.dart';
@@ -20,6 +21,7 @@ class MyApp extends StatelessWidget {
       title: 'Hetanshi Enterprise',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        textTheme: GoogleFonts.poppinsTextTheme(),
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
         inputDecorationTheme: const InputDecorationTheme(

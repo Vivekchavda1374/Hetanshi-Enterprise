@@ -30,7 +30,8 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
     super.initState();
     _nameController = TextEditingController(text: widget.party?.name ?? '');
     _mobileController = TextEditingController(text: widget.party?.mobile ?? '');
-    _addressController = TextEditingController(text: widget.party?.address ?? '');
+    _addressController =
+        TextEditingController(text: widget.party?.address ?? '');
   }
 
   @override
@@ -104,7 +105,7 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
                   key: _formKey,
                   child: Column(
                     children: [
-                       // Header Icon
+                      // Header Icon
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -112,7 +113,9 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          widget.party == null ? Icons.person_add_rounded : Icons.edit_rounded,
+                          widget.party == null
+                              ? Icons.person_add_rounded
+                              : Icons.edit_rounded,
                           size: 40,
                           color: AppColors.primaryBlue,
                         ),
@@ -127,11 +130,14 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
                           prefixIcon: const Icon(Icons.person_outline),
                           filled: true,
                           fillColor: Colors.grey[50],
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none),
                         ),
                         textCapitalization: TextCapitalization.words,
-                        validator: (value) =>
-                            value == null || value.isEmpty ? 'Please enter name' : null,
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Please enter name'
+                            : null,
                       ),
                       const SizedBox(height: 16),
 
@@ -142,13 +148,22 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
                           labelText: 'Mobile Number',
                           prefixIcon: const Icon(Icons.phone_outlined),
                           filled: true,
-                          fillColor: Colors.grey[50], 
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                          fillColor: Colors.grey[50],
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none),
                         ),
                         keyboardType: TextInputType.phone,
-                        validator: (value) => value == null || value.isEmpty
-                            ? 'Please enter mobile number'
-                            : null,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter mobile number';
+                          }
+                          // Exact 10 digit regex
+                          if (!RegExp(r'^[0-9]{10}$').hasMatch(value)) {
+                            return 'Enter a valid 10-digit number';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 16),
 
@@ -160,12 +175,15 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
                           prefixIcon: const Icon(Icons.location_on_outlined),
                           filled: true,
                           fillColor: Colors.grey[50],
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none),
                         ),
                         maxLines: 3,
                         textCapitalization: TextCapitalization.sentences,
-                        validator: (value) =>
-                            value == null || value.isEmpty ? 'Please enter address' : null,
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Please enter address'
+                            : null,
                       ),
                       const SizedBox(height: 32),
 
@@ -188,11 +206,16 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
                               ? const SizedBox(
                                   height: 24,
                                   width: 24,
-                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                                  child: CircularProgressIndicator(
+                                      color: Colors.white, strokeWidth: 2.5),
                                 )
                               : Text(
-                                  widget.party == null ? 'Save Party' : 'Update Party',
-                                  style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.w600),
+                                  widget.party == null
+                                      ? 'Save Party'
+                                      : 'Update Party',
+                                  style: GoogleFonts.poppins(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600),
                                 ),
                         ),
                       ),
@@ -207,4 +230,3 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
     );
   }
 }
-

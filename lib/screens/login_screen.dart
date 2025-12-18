@@ -26,8 +26,8 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       // Check Admin Login first
-      if (_emailController.text.trim() == 'hetanshi@gmail.com' &&
-          _passwordController.text.trim() == '123') {
+      if (_emailController.text.trim() == 'hetanshi.enterprise@gmail.com' &&
+          _passwordController.text.trim() == 'hetanshi@123') {
         await Future.delayed(const Duration(seconds: 1)); // Simulate delay
         if (mounted) {
           setState(() {

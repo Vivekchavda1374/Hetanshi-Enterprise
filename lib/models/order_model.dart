@@ -38,6 +38,7 @@ class OrderItem {
 
 class OrderModel {
   final String id;
+  final String userId;
   final String partyId;
   final String partyName;
   final DateTime date;
@@ -46,6 +47,7 @@ class OrderModel {
 
   OrderModel({
     required this.id,
+    this.userId = '', // Default to empty for backward compatibility
     required this.partyId,
     required this.partyName,
     required this.date,
@@ -56,6 +58,7 @@ class OrderModel {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'userId': userId,
       'partyId': partyId,
       'partyName': partyName,
       'date': Timestamp.fromDate(date),
@@ -67,6 +70,7 @@ class OrderModel {
   factory OrderModel.fromMap(Map<String, dynamic> map, String documentId) {
     return OrderModel(
       id: documentId,
+      userId: map['userId'] ?? '',
       partyId: map['partyId'] ?? '',
       partyName: map['partyName'] ?? '',
       date: (map['date'] as Timestamp).toDate(),

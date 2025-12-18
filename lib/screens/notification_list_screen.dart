@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hetanshi_enterprise/services/firestore_service.dart';
 import 'package:hetanshi_enterprise/utils/app_theme.dart';
 import 'package:hetanshi_enterprise/widgets/modern_background.dart';
+import 'package:hetanshi_enterprise/services/auth_manager.dart';
 import 'package:intl/intl.dart';
 
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -21,7 +22,11 @@ class NotificationListScreen extends StatelessWidget {
             _buildHeader(context),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
-                stream: FirestoreService().getNotifications(),
+                stream: FirestoreService().getNotifications(
+                  targetUserId: AuthManager.instance.isUser
+                      ? AuthManager.instance.currentUser?.id
+                      : 'admin',
+                ),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -32,11 +37,13 @@ class NotificationListScreen extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.notifications_off_outlined, size: 60, color: Colors.grey[400]),
+                          Icon(Icons.notifications_off_outlined,
+                              size: 60, color: Colors.grey[400]),
                           const SizedBox(height: 16),
                           Text(
                             'No notifications yet',
-                            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                            style: TextStyle(
+                                fontSize: 18, color: Colors.grey[600]),
                           ),
                         ],
                       ),
@@ -49,10 +56,13 @@ class NotificationListScreen extends StatelessWidget {
                     child: ListView.separated(
                       padding: const EdgeInsets.all(16),
                       itemCount: notifications.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 12),
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 12),
                       itemBuilder: (context, index) {
-                        final notification = notifications[index].data() as Map<String, dynamic>;
-                        final timestamp = notification['timestamp'] as Timestamp?;
+                        final notification =
+                            notifications[index].data() as Map<String, dynamic>;
+                        final timestamp =
+                            notification['timestamp'] as Timestamp?;
                         final date = timestamp?.toDate();
 
                         return AnimationConfiguration.staggeredList(
@@ -74,33 +84,44 @@ class NotificationListScreen extends StatelessWidget {
                                   ],
                                 ),
                                 child: ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 8),
                                   leading: Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: AppColors.primaryBlue.withOpacity(0.1),
+                                      color: AppColors.primaryBlue
+                                          .withOpacity(0.1),
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Icon(Icons.notifications, color: AppColors.primaryBlue),
+                                    child: const Icon(Icons.notifications,
+                                        color: AppColors.primaryBlue),
                                   ),
                                   title: Text(
                                     notification['title'] ?? 'Notification',
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16),
                                   ),
                                   subtitle: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const SizedBox(height: 4),
                                       Text(
                                         notification['body'] ?? '',
-                                        style: const TextStyle(color: AppColors.textSecondary),
+                                        style: const TextStyle(
+                                            color: AppColors.textSecondary),
                                       ),
                                       if (date != null)
                                         Padding(
-                                          padding: const EdgeInsets.only(top: 8.0),
+                                          padding:
+                                              const EdgeInsets.only(top: 8.0),
                                           child: Text(
-                                            DateFormat('MMM d, h:mm a').format(date),
-                                            style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                                            DateFormat('MMM d, h:mm a')
+                                                .format(date),
+                                            style: TextStyle(
+                                                color: Colors.grey[400],
+                                                fontSize: 12),
                                           ),
                                         ),
                                     ],
@@ -132,7 +153,8 @@ class NotificationListScreen extends StatelessWidget {
           bottomRight: Radius.circular(30),
         ),
       ),
-      padding: const EdgeInsets.fromLTRB(20, 40, 20, 30), // Adjusted top padding for SafeArea
+      padding: const EdgeInsets.fromLTRB(
+          20, 40, 20, 30), // Adjusted top padding for SafeArea
       child: Row(
         children: [
           IconButton(

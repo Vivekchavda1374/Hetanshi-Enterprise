@@ -53,3 +53,8 @@ GoogleService-Info.plist
 firebase_options.dart 
 .env
 
+
+# Firebase sensitive files
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+lib/firebase_options.dart

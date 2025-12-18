@@ -6,6 +6,7 @@ class Product {
   final String imageUrl;
   final String category;
   final String description;
+  final int stock;
 
   Product({
     required this.id,
@@ -15,6 +16,7 @@ class Product {
     this.imageUrl = '',
     this.category = '',
     this.description = '',
+    this.stock = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -26,6 +28,7 @@ class Product {
       'imageUrl': imageUrl,
       'category': category,
       'description': description,
+      'stock': stock,
     };
   }
 
@@ -38,31 +41,32 @@ class Product {
       imageUrl: map['imageUrl'] ?? '',
       category: map['category'] ?? '',
       description: map['description'] ?? '',
+      stock: map['stock'] ?? 0,
     );
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
+
     return other is Product &&
-      other.id == id &&
-      other.name == name &&
-      other.mrp == mrp &&
-      other.salesRate == salesRate &&
-      other.imageUrl == imageUrl &&
-      other.category == category &&
-      other.description == description;
+        other.id == id &&
+        other.name == name &&
+        other.mrp == mrp &&
+        other.salesRate == salesRate &&
+        other.imageUrl == imageUrl &&
+        other.category == category &&
+        other.description == description;
   }
 
   @override
   int get hashCode {
     return id.hashCode ^
-      name.hashCode ^
-      mrp.hashCode ^
-      salesRate.hashCode ^
-      imageUrl.hashCode ^
-      category.hashCode ^
-      description.hashCode;
+        name.hashCode ^
+        mrp.hashCode ^
+        salesRate.hashCode ^
+        imageUrl.hashCode ^
+        category.hashCode ^
+        description.hashCode;
   }
 }

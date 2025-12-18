@@ -3,6 +3,7 @@ import 'package:hetanshi_enterprise/models/party_model.dart';
 import 'package:hetanshi_enterprise/models/product_model.dart';
 import 'package:hetanshi_enterprise/models/order_model.dart';
 import 'package:hetanshi_enterprise/models/expense_model.dart';
+import 'package:hetanshi_enterprise/models/user_model.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -14,12 +15,61 @@ class FirestoreService {
   CollectionReference get _categories => _db.collection('categories');
   CollectionReference get _notifications => _db.collection('notifications');
   CollectionReference get _expenses => _db.collection('expenses');
+  CollectionReference get _users => _db.collection('users');
+
+  // --- Users ---
+  Future<UserModel?> loginUser(String email, String password) async {
+    try {
+      final query = await _users
+          .where('email', isEqualTo: email)
+          // We don't filter by role 'user' strictly in query, because admin created users might have 'Salesman' or 'User' role.
+          // But effectively we are looking for valid credentials.
+          .limit(1)
+          .get();
+
+      if (query.docs.isNotEmpty) {
+        final doc = query.docs.first;
+        final user =
+            UserModel.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+
+        // Check password
+        if (user.password == password) {
+          return user;
+        }
+      }
+      return null;
+    } catch (e) {
+      print("Login Error: $e");
+      return null;
+    }
+  }
+
+  Stream<List<UserModel>> getUsers() {
+    return _users.snapshots().map((snapshot) {
+      return snapshot.docs
+          .map((doc) =>
+              UserModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+          .toList();
+    });
+  }
+
+  Future<void> addUser(UserModel user) {
+    return _users.add(user.toMap());
+  }
+
+  Future<void> deleteUser(String id) {
+    return _users.doc(id).delete();
+  }
 
   // --- Expenses ---
   Stream<List<ExpenseModel>> getExpenses() {
-    return _expenses.orderBy('date', descending: true).snapshots().map((snapshot) {
+    return _expenses
+        .orderBy('date', descending: true)
+        .snapshots()
+        .map((snapshot) {
       return snapshot.docs
-          .map((doc) => ExpenseModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+          .map((doc) =>
+              ExpenseModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
           .toList();
     });
   }
@@ -34,10 +84,10 @@ class FirestoreService {
 
   Stream<double> getTotalExpenses() {
     return _expenses.snapshots().map((snapshot) {
-        return snapshot.docs.fold(0.0, (sum, doc) {
-           final data = doc.data() as Map<String, dynamic>;
-           return sum + (data['amount'] ?? 0.0);
-        });
+      return snapshot.docs.fold(0.0, (sum, doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return sum + (data['amount'] ?? 0.0);
+      });
     });
   }
 
@@ -45,7 +95,8 @@ class FirestoreService {
   Stream<List<Product>> getProducts() {
     return _products.snapshots().map((snapshot) {
       return snapshot.docs
-          .map((doc) => Product.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+          .map((doc) =>
+              Product.fromMap(doc.data() as Map<String, dynamic>, doc.id))
           .toList();
     });
   }
@@ -58,6 +109,22 @@ class FirestoreService {
     return _products.doc(product.id).update(product.toMap());
   }
 
+  Future<void> updateProductStock(String productId, int quantityDeducted) {
+    final docRef = _products.doc(productId);
+    return _db.runTransaction((transaction) async {
+      final snapshot = await transaction.get(docRef);
+      if (!snapshot.exists) {
+        throw Exception("Product does not exist!");
+      }
+      final newStock = (snapshot.data() as Map<String, dynamic>)['stock'] ?? 0;
+      // We allow negative stock for now if admin forces it via other means,
+      // but ideally we check before calling this.
+      // This strict Transaction ensures atomic updates.
+      transaction
+          .update(docRef, {'stock': FieldValue.increment(-quantityDeducted)});
+    });
+  }
+
   Future<void> deleteProduct(String id) {
     return _products.doc(id).delete();
   }
@@ -66,7 +133,8 @@ class FirestoreService {
   Stream<List<Party>> getParties() {
     return _parties.snapshots().map((snapshot) {
       return snapshot.docs
-          .map((doc) => Party.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+          .map((doc) =>
+              Party.fromMap(doc.data() as Map<String, dynamic>, doc.id))
           .toList();
     });
   }
@@ -84,10 +152,17 @@ class FirestoreService {
   }
 
   // --- Orders ---
-  Stream<List<OrderModel>> getOrders() {
-    return _orders.orderBy('date', descending: true).snapshots().map((snapshot) {
+  Stream<List<OrderModel>> getOrders({String? userId}) {
+    Query query = _orders.orderBy('date', descending: true);
+
+    if (userId != null && userId.isNotEmpty) {
+      query = query.where('userId', isEqualTo: userId);
+    }
+
+    return query.snapshots().map((snapshot) {
       return snapshot.docs
-          .map((doc) => OrderModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+          .map((doc) =>
+              OrderModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
           .toList();
     });
   }
@@ -99,13 +174,18 @@ class FirestoreService {
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
-          .map((doc) => OrderModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+          .map((doc) =>
+              OrderModel.fromMap(doc.data() as Map<String, dynamic>, doc.id))
           .toList();
     });
   }
 
   Future<void> addOrder(OrderModel order) {
     return _orders.add(order.toMap());
+  }
+
+  Future<void> deleteOrder(String id) {
+    return _orders.doc(id).delete();
   }
 
   // --- Categories ---
@@ -137,16 +217,32 @@ class FirestoreService {
   }
 
   // --- Notifications ---
-  Stream<QuerySnapshot> getNotifications() {
-    return _notifications.orderBy('timestamp', descending: true).snapshots();
+  Stream<QuerySnapshot> getNotifications({String? targetUserId}) {
+    Query query = _notifications.orderBy('timestamp', descending: true);
+
+    // If targetUserId is provided, filter.
+    // 'admin' sees all notifications targeted to 'admin' (and maybe 'all' if we had that).
+    // Users see notifications targeted to their ID.
+    if (targetUserId != null) {
+      if (targetUserId == 'admin') {
+        query = query.where('targetUserId', isEqualTo: 'admin');
+      } else {
+        query = query.where('targetUserId', isEqualTo: targetUserId);
+      }
+    }
+
+    return query.snapshots();
   }
 
-  Future<void> addNotification(String title, String body) {
+  Future<void> addNotification(String title, String body,
+      {String? targetUserId}) {
     return _notifications.add({
       'title': title,
       'body': body,
       'timestamp': FieldValue.serverTimestamp(),
       'read': false,
+      'targetUserId':
+          targetUserId ?? 'admin', // Default to admin if not specified
     });
   }
 }

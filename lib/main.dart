@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:hetanshi_enterprise/firebase_options.dart';
 import 'package:hetanshi_enterprise/screens/login_screen.dart';
+import 'package:hetanshi_enterprise/screens/auth/register_screen.dart';
 import 'package:hetanshi_enterprise/screens/splash_screen.dart';
 import 'package:hetanshi_enterprise/screens/dashboard_screen.dart';
 import 'package:hetanshi_enterprise/screens/product/product_list_screen.dart';
@@ -40,6 +41,7 @@ class MyApp extends StatelessWidget {
         '/users': (context) => const UserListScreen(),
         '/orders': (context) => const OrderListScreen(),
         '/history': (context) => const OrderHistoryScreen(),
+        '/register': (context) => const RegisterScreen(),
       },
     );
   }

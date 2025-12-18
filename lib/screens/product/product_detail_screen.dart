@@ -7,6 +7,7 @@ import 'package:hetanshi_enterprise/utils/toast_utils.dart';
 import 'package:hetanshi_enterprise/services/firestore_service.dart';
 import 'package:hetanshi_enterprise/screens/product/add_edit_product_screen.dart';
 import 'package:hetanshi_enterprise/widgets/modern_background.dart';
+import 'package:hetanshi_enterprise/services/auth_manager.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   final Product product;
@@ -21,7 +22,7 @@ class ProductDetailScreen extends StatelessWidget {
       backgroundColor: AppColors.backgroundGrey,
       appBar: AppBar(
         title: Text(product.name),
-        actions: [
+        actions: AuthManager.instance.isAdmin ? [
           IconButton(
             icon: const Icon(Icons.edit, color: Colors.white),
             onPressed: () {
@@ -67,7 +68,7 @@ class ProductDetailScreen extends StatelessWidget {
               }
             },
           ),
-        ],
+        ] : null,
       ),
       body: ModernBackground(
         child: SingleChildScrollView(

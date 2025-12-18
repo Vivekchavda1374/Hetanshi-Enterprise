@@ -9,6 +9,7 @@ import 'dart:convert';
 
 import 'package:hetanshi_enterprise/utils/app_theme.dart';
 import 'package:hetanshi_enterprise/widgets/modern_background.dart';
+import 'package:hetanshi_enterprise/services/auth_manager.dart';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart'; // Make sure this is imported for styling
@@ -22,6 +23,7 @@ import 'dart:convert';
 
 import 'package:hetanshi_enterprise/utils/app_theme.dart';
 import 'package:hetanshi_enterprise/widgets/modern_background.dart';
+import 'package:hetanshi_enterprise/screens/order/create_order_screen.dart';
 
 class ProductListScreen extends StatefulWidget {
   const ProductListScreen({super.key});
@@ -78,18 +80,23 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
             // 2. Filter products based on search and selected category
             final filteredProducts = allProducts.where((product) {
-              final matchesSearch = product.name.toLowerCase().contains(_searchQuery.toLowerCase());
+              final matchesSearch = product.name
+                  .toLowerCase()
+                  .contains(_searchQuery.toLowerCase());
               // Use default category if empty
-              final prodCategory = product.category.isEmpty ? 'Uncategorized' : product.category;
-              final matchesCategory = _selectedCategory == 'All' || prodCategory == _selectedCategory;
-              
+              final prodCategory =
+                  product.category.isEmpty ? 'Uncategorized' : product.category;
+              final matchesCategory = _selectedCategory == 'All' ||
+                  prodCategory == _selectedCategory;
+
               return matchesSearch && matchesCategory;
             }).toList();
 
             // 3. Group FILTERED products
             Map<String, List<Product>> groupedProducts = {};
             for (var p in filteredProducts) {
-              String category = p.category.isEmpty ? 'Uncategorized' : p.category;
+              String category =
+                  p.category.isEmpty ? 'Uncategorized' : p.category;
               if (!groupedProducts.containsKey(category)) {
                 groupedProducts[category] = [];
               }
@@ -118,17 +125,19 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         },
                         decoration: InputDecoration(
                           hintText: 'Search products...',
-                          prefixIcon: const Icon(Icons.search, color: AppColors.textSecondary),
-                          suffixIcon: _searchQuery.isNotEmpty 
+                          prefixIcon: const Icon(Icons.search,
+                              color: AppColors.textSecondary),
+                          suffixIcon: _searchQuery.isNotEmpty
                               ? IconButton(
-                                  icon: const Icon(Icons.clear, color: AppColors.textSecondary),
+                                  icon: const Icon(Icons.clear,
+                                      color: AppColors.textSecondary),
                                   onPressed: () {
                                     _searchController.clear();
                                     setState(() {
                                       _searchQuery = '';
                                     });
                                   },
-                                ) 
+                                )
                               : null,
                           filled: true,
                           fillColor: Colors.white,
@@ -136,14 +145,16 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             borderRadius: BorderRadius.circular(30),
                             borderSide: BorderSide.none,
                           ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 14),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30),
-                            borderSide: const BorderSide(color: AppColors.primaryBlue, width: 1.5),
+                            borderSide: const BorderSide(
+                                color: AppColors.primaryBlue, width: 1.5),
                           ),
                         ),
                       ),
@@ -161,19 +172,26 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                 selected: isSelected,
                                 onSelected: (selected) {
                                   setState(() {
-                                    _selectedCategory = selected ? category : 'All';
+                                    _selectedCategory =
+                                        selected ? category : 'All';
                                   });
                                 },
                                 selectedColor: AppColors.primaryBlue,
                                 labelStyle: TextStyle(
-                                  color: isSelected ? Colors.white : AppColors.textPrimary,
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : AppColors.textPrimary,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.w500,
                                 ),
                                 backgroundColor: Colors.white,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),
                                   side: BorderSide(
-                                    color: isSelected ? Colors.transparent : Colors.grey.shade300,
+                                    color: isSelected
+                                        ? Colors.transparent
+                                        : Colors.grey.shade300,
                                   ),
                                 ),
                               ),
@@ -188,15 +206,15 @@ class _ProductListScreenState extends State<ProductListScreen> {
             );
 
             if (filteredProducts.isEmpty) {
-               slivers.add(
-                 const SliverFillRemaining(
-                   child: Center(
-                     child: Text('No products found matching filters'),
-                   ),
-                 ),
-               );
+              slivers.add(
+                const SliverFillRemaining(
+                  child: Center(
+                    child: Text('No products found matching filters'),
+                  ),
+                ),
+              );
             } else {
-               for (var category in sortedCategories) {
+              for (var category in sortedCategories) {
                 // Add Header Sliver
                 slivers.add(
                   SliverToBoxAdapter(
@@ -205,8 +223,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       child: Row(
                         children: [
                           Container(
-                            width: 4, 
-                            height: 24, 
+                            width: 4,
+                            height: 24,
                             decoration: BoxDecoration(
                               color: AppColors.secondaryTeal,
                               borderRadius: BorderRadius.circular(2),
@@ -233,26 +251,27 @@ class _ProductListScreenState extends State<ProductListScreen> {
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     sliver: SliverGrid(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
-                        childAspectRatio: 0.75, 
+                        childAspectRatio: 0.75,
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
                       ),
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
-                           final product = categoryProducts[index];
-                           // Just a simple animation wrapper now, simpler logic
-                           return AnimationConfiguration.staggeredGrid(
-                              position: index,
-                              duration: const Duration(milliseconds: 375),
-                              columnCount: 2,
-                              child: ScaleAnimation(
-                                child: FadeInAnimation(
-                                  child: _buildProductCard(context, product),
-                                ),
+                          final product = categoryProducts[index];
+                          // Just a simple animation wrapper now, simpler logic
+                          return AnimationConfiguration.staggeredGrid(
+                            position: index,
+                            duration: const Duration(milliseconds: 375),
+                            columnCount: 2,
+                            child: ScaleAnimation(
+                              child: FadeInAnimation(
+                                child: _buildProductCard(context, product),
                               ),
-                           );
+                            ),
+                          );
                         },
                         childCount: categoryProducts.length,
                       ),
@@ -263,7 +282,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
             }
 
             // Add bottom padding
-             slivers.add(const SliverToBoxAdapter(child: SizedBox(height: 80)));
+            slivers.add(const SliverToBoxAdapter(child: SizedBox(height: 80)));
 
             return AnimationLimiter(
               child: CustomScrollView(
@@ -273,18 +292,20 @@ class _ProductListScreenState extends State<ProductListScreen> {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AddEditProductScreen(),
-            ),
-          );
-        },
-        backgroundColor: AppColors.secondaryTeal,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
+      floatingActionButton: AuthManager.instance.isAdmin
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AddEditProductScreen(),
+                  ),
+                );
+              },
+              backgroundColor: AppColors.secondaryTeal,
+              child: const Icon(Icons.add, color: Colors.white),
+            )
+          : null,
     );
   }
 
@@ -328,7 +349,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         ? DecorationImage(
                             image: product.imageUrl.startsWith('http')
                                 ? NetworkImage(product.imageUrl)
-                                : MemoryImage(base64Decode(product.imageUrl)) as ImageProvider,
+                                : MemoryImage(base64Decode(product.imageUrl))
+                                    as ImageProvider,
                             fit: BoxFit.contain,
                           )
                         : null,
@@ -341,7 +363,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 ),
               ),
             ),
-            
+
             // Info Section
             Padding(
               padding: const EdgeInsets.all(12.0),
@@ -367,14 +389,69 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       color: AppColors.textSecondary,
                     ),
                   ),
-                  Text(
-                    '₹${product.salesRate}',
-                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: AppColors.successGreen,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '₹${product.salesRate.toStringAsFixed(0)}',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primaryBlue,
+                        ),
+                      ),
+                      // Stock Display
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: product.stock > 0
+                              ? AppColors.successGreen.withOpacity(0.1)
+                              : AppColors.errorRed.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          product.stock > 0
+                              ? 'Stock: ${product.stock}'
+                              : 'Out of Stock',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: product.stock > 0
+                                ? AppColors.successGreen
+                                : AppColors.errorRed,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+                  const SizedBox(height: 12),
+                  // Order Button
+                  if (AuthManager.instance.isUser)
+                    SizedBox(
+                      height: 32,
+                      child: ElevatedButton(
+                        onPressed: product.stock > 0
+                            ? () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CreateOrderScreen(
+                                      initialProduct: product,
+                                    ),
+                                  ),
+                                );
+                              }
+                            : null, // Disable if out of stock
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.secondaryTeal,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.zero,
+                          textStyle: const TextStyle(fontSize: 12),
+                        ),
+                        child: const Text('Order'),
+                      ),
+                    ),
                 ],
               ),
             ),
